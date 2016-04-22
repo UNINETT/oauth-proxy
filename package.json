@@ -1,0 +1,27 @@
+{
+	"name": "oauth-proxy",
+	"version": "1.0.0",
+	"description": "Proxy that requires OAuth and passes on the bearer token for authorization elsewhere.",
+	"main": "index.js",
+	"dependencies": {
+		"create-server": "^1.0.1",
+		"express": "^4.13.4",
+		"express-session": "^1.13.0",
+		"http-proxy": "^1.13.2",
+		"nconf": "^0.8.4"
+	},
+	"devDependencies": {},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/UNINETT/oauth_proxy.git"
+	},
+	"author": "Jørn Åne <jorn.dejong@uninett.no>",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/UNINETT/oauth_proxy/issues"
+	},
+	"homepage": "https://github.com/UNINETT/oauth_proxy#readme"
+}
