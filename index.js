@@ -3,75 +3,97 @@ const session      = require('express-session');
 const httpProxy    = require('http-proxy');
 const passport     = require('passport');
 const nconf        = require('nconf');
-const crypto       = require('crypto');
 const createServer = require('create-server');
 
-const app = express();
 nconf.argv().env().file({ file: 'oauth-proxy.json' });
-const strategy = nconf.get('oauth:strategy:module') || 'passport-dataporten-oauth2';
-const target = nconf.get('proxy:target') || 'https://example.com';
-const parsedTarget = require('url').parse(target);
-const strategyClass = require(strategy).Strategy;
-const server = createServer(nconf.get('server'));
-const proxy = httpProxy.createProxyServer({});
 
-// Add session support to our Express application.
-app.use(session({
-	secret: nconf.get('session:secret') || crypto.randomBytes(48).toString('hex'),
-	resave: false,
-	saveUninitialized: true
-}));
+function startServer(options) {
+	const app = express();
+	const server = createServer(options);
 
-// Define how users should be serialized/deserialized; we just use verbatim.
-passport.serializeUser(function(user, done) {
-	done(null, user);
-});
-passport.deserializeUser(function(user, done) {
-	done(null, user);
-});
+	app.disable('x-powered-by');
+	server.on('request', app);
 
-// Define the authentication mechanism.
-passport.use(new strategyClass(nconf.get('oauth:strategy:options'),
-	function(accessToken, refreshToken, profile, done) {
-		done(null, profile);
-	}
-));
+	return app;
+}
 
-// Use the strategy.
-app.use(passport.initialize());
+function oauthify(app, strategy) {
+	const module = strategy['module'] || 'passport-dataporten-oauth2';
+	const strategyClass = require(module).Strategy;
 
-// Handle OAuth callback.
-app.get('/__oauth/callback/',
-	passport.authenticate(nconf.get('oauth:strategy:name')),
-	function(req, res) {
-		// Successful authentication, redirect home.
-		res.redirect('/');
-	}
-);
+	// Define how users should be serialized/deserialized; we just use verbatim.
+	passport.serializeUser(function(user, done) {
+		done(null, user);
+	});
+	passport.deserializeUser(function(user, done) {
+		done(null, user);
+	});
 
-// enable for debugging purposes..
-/*
-app.get('/__oauth/token/',
-	function(req, res) {
+	// Define the authentication mechanism.
+	passport.use(new strategyClass(strategy['options'],
+		function(accessToken, refreshToken, profile, done) {
+			done(null, profile);
+		}
+	));
+
+	// Add session support to our Express application.
+	app.use(session({
+		cookie: { path: '/', httpOnly: false, secure: false, maxAge: null },
+		secret: nconf.get('session:secret') || require('crypto').randomBytes(48).toString('hex'),
+		resave: false,
+		saveUninitialized: true
+	}));
+
+	// Use the strategy.
+	app.use(passport.initialize());
+
+	// Handle OAuth callback.
+	app.get('/__oauth/callback/',
+		passport.authenticate(strategy['name']),
+		function(req, res) {
+			// Successful authentication, redirect home.
+			res.redirect('/');
+		}
+	);
+
+	// enable for debugging purposes..
+	app.get('/__oauth/token/',
+		function(req, res) {
+			res.writeHead(200, {
+				'Content-Type': 'text/plain'
+			});
+			res.end(req.session.passport.user.accessToken);
+		}
+	);
+
+	return app;
+}
+
+function authenticatify(func, strategy) {
+	return function(req, res) {
 		var session = req.session;
-		res.end(session.passport.user.accessToken);
-	}
-);
-*/
+		if ('passport' in session) {
+			var token = session.passport.user.accessToken;
+			req.headers['authorization'] = 'Bearer ' + token; // add the bearer token
+			delete req.headers['cookie'];
+			return func(req, res);
+		} else {
+			return passport.authenticate(strategy) (req, res);
+		}
+	};
+}
 
-app.use(function(req, res) {
-	var session = req.session;
-	if ('passport' in session) {
-		var token = session.passport.user.accessToken;
-		var options = { target: target };
-		req.headers['host'] = parsedTarget.host; // hack to fix TLS-cert check
-		req.headers['authorization'] = 'Bearer ' + token; // add the bearer token
-		delete req.headers['cookie'];
-		proxy.web(req, res, options);
-	} else {
-		passport.authenticate(nconf.get('oauth:strategy:name')) (req, res);
-	}
-});
+function proxify(req, res) {
+	const proxy = httpProxy.createProxyServer({});
+	const target = nconf.get('proxy:target') || 'https://example.com';
 
-app.disable('x-powered-by');
-server.on('request', app);
+	var parsedTarget = require('url').parse(target);
+	req.headers['host'] = parsedTarget.host; // hack to fix TLS-cert check
+
+	var options = { target: target };
+	proxy.web(req, res, options);
+}
+
+var app = startServer(nconf.get('server'));
+oauthify(app, nconf.get('oauth:strategy'));
+app.use(authenticatify(proxify, nconf.get('oauth:strategy:name') || 'dataporten'));
