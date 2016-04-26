@@ -3,5 +3,3 @@ module.exports = {
 	oauthify: require('./oauthify.js'),
 	proxify: require('./proxify.js')
 }
-
-console.log(module.exports);

@@ -42,15 +42,5 @@ function oauthify(app, strategy, customSession) {
 		}
 	);
 
-	// enable for debugging purposes..
-	app.get('/__oauth/token/',
-		function(req, res) {
-			res.writeHead(200, {
-				'Content-Type': 'text/plain'
-			});
-			res.end(req.session.passport.user.accessToken);
-		}
-	);
-
 	return app;
 }
