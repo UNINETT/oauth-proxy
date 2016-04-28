@@ -11,6 +11,7 @@ function authenticatify(func, strategy) {
 			delete req.headers['cookie'];
 			return func(req, res);
 		} else {
+			session.oauth_proxy = {url:req.url};
 			return passport.authenticate(strategy) (req, res);
 		}
 	};

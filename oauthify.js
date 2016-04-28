@@ -38,7 +38,8 @@ function oauthify(app, strategy, customSession) {
 		passport.authenticate(strategy['name']),
 		function(req, res) {
 			// Successful authentication, redirect home.
-			res.redirect('/');
+			res.redirect(req.session.oauth_proxy.url || '/');
+			delete req.session.oauth_proxy.url;
 		}
 	);
 
