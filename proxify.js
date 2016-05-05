@@ -20,6 +20,15 @@ function proxify(target) {
 		}
 	});
 
+	// Listen for the `error` event on `proxy`.
+	proxy.on('error', function (err, req, res) {
+		res.writeHead(500, {
+			'Content-Type': 'text/plain'
+		});
+
+		res.end(JSON.stringify(err) + "\n");
+	});
+
 	return function(req, res) {
 		var parsedTarget = require('url').parse(target);
 		req.headers['host'] = parsedTarget.host; // hack to fix TLS-cert check
