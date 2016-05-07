@@ -8,7 +8,7 @@ nconf.argv().env().file({ file: 'oauth-proxy.json' });
 
 const app = express();
 const server = createServer(nconf.get('server'));
-const proxy = op.createProxy(nconf.get('proxy'))
+const proxy = op.createProxy(nconf.get('proxy'));
 
 app.disable('x-powered-by');
 op.oauthify(app, nconf.get('oauth:strategy'));
