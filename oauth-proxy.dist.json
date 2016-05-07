@@ -6,7 +6,7 @@
 			"options": {
 				"clientID": "00000000-0000-4000-8000-000000000000",
 				"clientSecret": "00000000-0000-4000-8000-000000000000",
-				"callbackURL": "http://localhost:8080/__oauth/callback/"
+				"callbackURL": "http://localhost:8080/__oauth/callback"
 			}
 		}
 	},
