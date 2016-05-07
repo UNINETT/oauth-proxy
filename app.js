@@ -1,14 +1,16 @@
-const op          = require('./');
-const nconf       = require('nconf');
+const op           = require('./');
+const nconf        = require('nconf');
 const express      = require('express');
 const createServer = require('create-server');
+const createProxy  = require('./proxify.js');
+
 
 
 nconf.argv().env().file({ file: 'oauth-proxy.json' });
 
 const app = express();
 const server = createServer(nconf.get('server'));
-const proxy = op.createProxy(nconf.get('proxy'));
+const proxy = createProxy(nconf.get('proxy'));
 
 app.disable('x-powered-by');
 op.oauthify(app, nconf.get('oauth:strategy'));
