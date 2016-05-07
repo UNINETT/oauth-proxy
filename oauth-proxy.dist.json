@@ -11,7 +11,8 @@
 		}
 	},
 	"proxy": {
-		"target": "https://example.com"
+		"target": "https://example.com",
+		"ws": true
 	},
 	"server": {
 		"port": 8080,
