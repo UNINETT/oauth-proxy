@@ -2,8 +2,8 @@ const httpProxy = require('http-proxy');
 
 module.exports = proxify;
 
-function proxify(target) {
-	const proxy = httpProxy.createProxyServer({});
+function createProxy(options) {
+	const proxy = httpProxy.createProxyServer(options);
 
 	proxy.on('proxyRes', function (proxyRes, req, res) {
 		// If we get a 401 back, our token is no longer valid.
@@ -29,11 +29,5 @@ function proxify(target) {
 		res.end(JSON.stringify(err) + "\n");
 	});
 
-	return function(req, res) {
-		var parsedTarget = require('url').parse(target);
-		req.headers['host'] = parsedTarget.host; // hack to fix TLS-cert check
-
-		var options = { target: target };
-		proxy.web(req, res, options);
-	}
+	return proxy;
 }
