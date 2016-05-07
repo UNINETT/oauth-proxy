@@ -1,7 +1,5 @@
 const httpProxy = require('http-proxy');
 
-module.exports = proxify;
-
 function createProxy(options) {
 	const proxy = httpProxy.createProxyServer(options);
 
