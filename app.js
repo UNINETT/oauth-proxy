@@ -6,7 +6,7 @@ const createProxy  = require('./proxify.js');
 
 
 
-nconf.argv().env().file({ file: 'oauth-proxy.json' });
+nconf.argv().env().file({ file: 'config/oauth-proxy.json' });
 
 const app = express();
 const server = createServer(nconf.get('server'));
