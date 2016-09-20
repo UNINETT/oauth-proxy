@@ -40,7 +40,8 @@ function oauthify(app, strategy, customSession) {
 			// Successful authentication, redirect home.
 			var data = req.session.oauth_proxy || {}
 			res.redirect(data.url || '/');
-			delete req.session.oauth_proxy.url;
+			if ('oauth_proxy' in req.session)
+				delete req.session.oauth_proxy.url;
 		}
 	);
 
