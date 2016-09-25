@@ -6,6 +6,15 @@ function proxify(target) {
 	const proxy = httpProxy.createProxyServer({});
 
 	proxy.on('proxyRes', function (proxyRes, req, res) {
+		// Remove any HSTS headers, as we don't support HTTPS.
+		// If HSTS is required, the reverse proxy in front
+		// should add them again.
+		//
+		// If we don't do this, and both the backend and the
+		// reverse proxy in front set HSTS, we may end up with
+		// a mangled HSTS header.
+		delete proxyRes.headers['strict-transport-security']
+
 		// If we get a 401 back, our token is no longer valid.
 		// The proxy doesn't know how to fix it,
 		// so we'll just remove the session.
