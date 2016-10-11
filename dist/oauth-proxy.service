@@ -1,0 +1,11 @@
+[Unit]
+Description=OAuth proxy
+After=network.target
+
+[Service]
+ExecStart=/bin/sh -c "cd /opt/uninett/oauth-proxy/ && /usr/bin/node app.js"
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
