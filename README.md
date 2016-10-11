@@ -4,6 +4,10 @@ An HTTP proxy that requires OAuth authentication, removes cookies and adds
 OAuth bearer tokens.  This will allow webbrowsers to communicate with
 API-servers.
 
+Remember to install the actual passport strategy you'll need, e.g.:
+
+	npm install passport-dataporten
+
 
 ## Configuration
 
